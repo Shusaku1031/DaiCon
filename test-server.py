@@ -28,8 +28,8 @@ def controller():
     #if request.method == "GET":
     #    return request.args.get("query","")
     if request.method == "POST":
-        if os.path.exists("irmcli/"+request.form["query"]+".json"):
-            print(subprocess.run(["python","irmcli/irmcli.py","-p","-f","irmcli/"+request.form["query"]+".json"]))
+        if os.path.exists(request.form["query"]+".json"):
+            subprocess.run(["python3","irmcli.py","-p","-f",request.form["query"]+".json"])
             return """
                 <h1>You sent {} signal.</h1>
                 <form action="/controller">
@@ -62,8 +62,9 @@ def register():
     
     if request.method == "POST":
         
-        result = subprocess.run(["python","irmcli/irmcli.py","-c","-f","irmcli/"+request.form["query"]+".json"])
-        if result.returncode == 0 and os.path.exists("irmcli/"+request.form["query"]+".json") == True:
+        
+        result = subprocess.run(["python3","irmcli.py","-c","-f",request.form["query"]+".json"])
+        if result.returncode == 0 and os.path.exists(request.form["query"]+".json") == True:
             print("success")
             return """
                 <h1>Success({}.json)</h1>
@@ -83,8 +84,7 @@ def register():
                     <button type="submit" formmethod="post">Regist signal</button>
                 </form>
                 <form action="/">
-                    <button>Return to main page<
-                    /button>
+                    <button>Return to main page</button>
                 </form>
                 """.format(request.form["query"])
              

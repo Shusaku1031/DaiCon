@@ -13,11 +13,11 @@ ir_serial = serial.Serial("/dev/ttyACM0", 9600, timeout = 1)
 
 def captureIR(path):
   print("Capturing IR...".encode())
-  ir_serial.write("c\r\n")
+  ir_serial.write("c\r\n".encode())
   time.sleep(3.0)
   msg = ir_serial.readline()
   print(msg)
-  if path and not 'Time Out' in msg:
+  if path and not 'Time Out' in msg.decode():
     saveIR(path)
 
 def playIR(path):
@@ -55,7 +55,7 @@ def playIR(path):
     #ir_serial.close() 
   else:
     print("Playing IR...")
-    ir_serial.write("p\r\n")
+    ir_serial.write("p\r\n".encode())
     time.sleep(1.0)
     msg = ir_serial.readline()
     print(msg)
@@ -64,12 +64,12 @@ def playIR(path):
 def saveIR(path):
   print("Saving IR data to %s ..." % path)
   rawX = []
-  ir_serial.write("I,1\r\n")
+  ir_serial.write("I,1\r\n".encode())
   time.sleep(1.0)
   recNumberStr = ir_serial.readline()
   recNumber = int(recNumberStr, 16)
   
-  ir_serial.write("I,6\r\n")
+  ir_serial.write("I,6\r\n".encode())
   time.sleep(1.0)
   postScaleStr = ir_serial.readline()
   postScale = int(postScaleStr, 10)
@@ -79,9 +79,9 @@ def saveIR(path):
       bank = n / 64
       pos = n % 64
       if (pos == 0):
-          ir_serial.write("b,%d\r\n" % bank)
+          ir_serial.write("b,%d\r\n".encode() % bank)
   
-      ir_serial.write("d,%d\n\r" % pos)
+      ir_serial.write("d,%d\n\r".encode() % pos)
       xStr = ir_serial.read(3) 
       xData = int(xStr, 16)
       rawX.append(xData)
@@ -92,6 +92,7 @@ def saveIR(path):
   json.dump(data, f)
   f.close()
   print("Done !")
+  print(rawX)
 
 
 def measureTemperature():
