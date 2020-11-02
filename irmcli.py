@@ -18,24 +18,26 @@ def captureIR(path):
   msg = ir_serial.readline()
   print(msg)
   if path and not 'Time Out' in msg.decode():
-    saveIR(path)
+    return saveIR(path)
 
-def playIR(path):
-  if path and os.path.isfile(path):
-    print("Playing IR with %s ..." % path)
-    f = open(path)
-    data = json.load(f)
+def playIR(data):
+  #if path and os.path.isfile(path):
+  if len(data) != 0:
+    #print("Playing IR with %s ..." % path)
+    #f = open(path)
+    #data = json.load(f)
     
-    f.close()
-    recNumber = len(data['data'])
-    rawX = data['data']
-    print(type(rawX))
+    #f.close()
+    #recNumber = len(data['data'])
+    recNumber = len(data)
+    #rawX = data['data']
+    rawX = data
 
     ir_serial.write("n,%d\r\n".encode() % recNumber)
     ir_serial.readline()
 
-    postScale = data['postscale']
-    ir_serial.write("k,%d\r\n".encode() % postScale)
+    #postScale = data['postscale']
+    #ir_serial.write("k,%d\r\n".encode() % postScale)
     #time.sleep(1.0)
     msg = ir_serial.readline()
     #print msg
@@ -93,6 +95,7 @@ def saveIR(path):
   f.close()
   print("Done !")
   print(rawX)
+  return rawX
 
 
 def measureTemperature():

@@ -1,6 +1,8 @@
 from flask import Flask, request, abort, Markup
 import subprocess
 import os
+import json
+import irmcli
 
 app = Flask(__name__)
 
@@ -29,7 +31,13 @@ def controller():
     #    return request.args.get("query","")
     if request.method == "POST":
         if os.path.exists(request.form["query"]+".json"):
-            subprocess.run(["python3","irmcli.py","-p","-f",request.form["query"]+".json"])
+            
+            json_file = open(request.form["query"]+".json","r")
+            json_load = json.load(json_file)
+            json_file.close()
+            
+            irmcli.playIR(json_load["data"])
+            #subprocess.run(["python3","irmcli.py","-p","-f",request.form["query"]+".json"])
             return """
                 <h1>You sent {} signal.</h1>
                 <form action="/controller">
@@ -63,17 +71,21 @@ def register():
     if request.method == "POST":
         
         
-        result = subprocess.run(["python3","irmcli.py","-c","-f",request.form["query"]+".json"])
-        if result.returncode == 0 and os.path.exists(request.form["query"]+".json") == True:
+        #result = subprocess.run(["python3","irmcli.py","-c","-f",request.form["query"]+".json"])
+        try:
+            data = irmcli.captureIR(request.form["query"]+".json")
+        #if result.returncode == 0 and os.path.exists(request.form["query"]+".json") == True:
             print("success")
             return """
                 <h1>Success({}.json)</h1>
                 <form action="/">
                     <button>Return to main page</button>
                 </form>
-                """.format(request.form["query"])
+                <p>{}</p>
+                """.format(request.form["query"],data)
         
-        else:
+        #else:
+        except:
              print("failed")
              return """
                 <h1>Failed({}.json)</h1>
