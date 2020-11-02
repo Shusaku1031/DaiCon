@@ -36,7 +36,9 @@ def controller():
             json_load = json.load(json_file)
             json_file.close()
             
-            irmcli.playIR(json_load["data"])
+            data = json_load["data"]
+            
+            irmcli.playIR(data)
             #subprocess.run(["python3","irmcli.py","-p","-f",request.form["query"]+".json"])
             return """
                 <h1>You sent {} signal.</h1>
@@ -46,7 +48,8 @@ def controller():
                     <button type="submit" formmethod="post">Send signal</button>
                 </form>
                 <button><a href="/">Return to main page</a></button>
-                """.format(request.form["query"])
+                <p>{}</p>
+                """.format(request.form["query"],data)
         else:
             return """
                     <h1>Failed...</h1>
