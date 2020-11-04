@@ -1,7 +1,15 @@
-from flask import Flask, request, abort, Markup
 import subprocess
 import os
+import json
+import irmcli
+import firebase_admin
 
+from flask import Flask, request, abort, Markup
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+#cred = credentials.Certificate(os.path.join("secret_key","daicon-credentials.json"))
+#firebase_admin.initialize_app(cred)
 app = Flask(__name__)
 
 @app.route("/")
@@ -27,9 +35,21 @@ def controller():
     
     #if request.method == "GET":
     #    return request.args.get("query","")
+    print("Request Type:",request.method)
     if request.method == "POST":
+        
+        print(request)
+        
         if os.path.exists(request.form["query"]+".json"):
-            subprocess.run(["python3","irmcli.py","-p","-f",request.form["query"]+".json"])
+            json_file = open(request.form["query"]+".json","r")
+            json_load = json.load(json_file)
+            json_file.close()
+            
+            data = json_load["data"]
+            
+            irmcli.playIR(data)
+            #subprocess.run(["python3","irmcli.py","-p","-f",request.form["query"]+".json"])
+            
             return """
                 <h1>You sent {} signal.</h1>
                 <form action="/controller">
@@ -38,7 +58,8 @@ def controller():
                     <button type="submit" formmethod="post">Send signal</button>
                 </form>
                 <button><a href="/">Return to main page</a></button>
-                """.format(request.form["query"])
+                <p>{}</p>
+                """.format(request.form["query"],data)
         else:
             return """
                     <h1>Failed...</h1>
@@ -53,7 +74,7 @@ def controller():
                     </form>
                     """
     else:
-        abort(400)
+        return "Get request"
     
     
 
@@ -62,18 +83,23 @@ def register():
     
     if request.method == "POST":
         
-        
-        result = subprocess.run(["python3","irmcli.py","-c","-f",request.form["query"]+".json"])
-        if result.returncode == 0 and os.path.exists(request.form["query"]+".json") == True:
+        #result = subprocess.run(["python3","irmcli.py","-c","-f",request.form["query"]+".json"])
+        try:
+            data = irmcli.captureIR(request.form["query"]+".json")
+            if data == None or data == []:
+                print(x)
+        #if result.returncode == 0 and os.path.exists(request.form["query"]+".json") == True:
             print("success")
             return """
                 <h1>Success({}.json)</h1>
                 <form action="/">
                     <button>Return to main page</button>
                 </form>
-                """.format(request.form["query"])
+                <p>{}</p>
+                """.format(request.form["query"],data)
         
-        else:
+        #else:
+        except:
              print("failed")
              return """
                 <h1>Failed({}.json)</h1>
@@ -87,7 +113,7 @@ def register():
                     <button>Return to main page</button>
                 </form>
                 """.format(request.form["query"])
-             
+
     else:
         return """
             <p>None</p>
